@@ -48,6 +48,10 @@ PAIR_QUESTION_IDS = (1, 5, 12, 21, 41)
 GENERATION_MODEL = "gpt-4o-mini"
 JUDGE_MODEL = "gpt-4o-mini"
 
+# --- RAGAS evaluator (m4) — explicit so metadata.evaluator_models is truthful ---
+EVALUATOR_LLM_MODEL = "gpt-4o-mini"
+EVALUATOR_EMBEDDING_MODEL = "text-embedding-3-small"
+
 # --- Guardrail latency budget ---
 LATENCY_BUDGET_P95_MS = 500  # Full guard target; Task 12 currently measures input guards only.
 PRESIDIO_LANGUAGE = "en"    # Presidio base language; custom VN recognizers added via PatternRecognizer
