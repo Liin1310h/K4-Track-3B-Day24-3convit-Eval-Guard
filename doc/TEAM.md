@@ -18,7 +18,7 @@ Thêm/xóa rows để khớp nhóm thật; mẫu ba rows không ép nhóm phải
 | STT | Họ và tên | MSSV | Vai trò / công việc thật | Bằng chứng |
 |---|---|---|---|---|
 | 1 | Phạm Thị Thùy Linh | 2A202602909 | Trưởng nhóm; tích hợp m1-m5 và sinh 50 answers; Phase A (Tasks 1-4 trong `src/phase_a_ragas.py`); `doc/reports/failure_clusters.md` | Commit 8161cd3, 1beac6f; `artifacts/answers_50q.json`, `artifacts/ragas_50q.json` |
-| 2 | {{Họ tên}} | {{MSSV}} | {{Phase/file/hàm}} | {{Commit/PR/report}} |
+| 2 | Nguyễn Đức Tâm | 2A202602921 | Phase B (Tasks 5-8 trong `src/phase_b_judge.py`), chạy live Phase B; `doc/reports/bias_report.md`; chủ biên Task 13 `doc/reports/blueprint.md` | PR #1 (nhánh `feat/phase-b`): commit f4db003, 7a75c4e, 6fbbebc; `artifacts/judge_results.json` |
 | 3 | {{Họ tên}} | {{MSSV}} | {{Phase/file/hàm}} | {{Commit/PR/report}} |
 
 Người tích hợp/chạy batch/nộp link: {{Họ tên, công việc và bằng chứng}}.
@@ -42,7 +42,16 @@ Sao chép mẫu cho mỗi thành viên; tiêu đề họ tên không dấu-MSSV.
 - Giới hạn/cách xử lý: diagnosis tự động trong Task 3 là heuristic dò từ khóa nên có chỗ sai (câu 9); đã đối chiếu thủ công contexts với file nguồn trong `data/` và ghi chỗ sửa trong báo cáo. Một lần chạy RAGAS, 50 câu, model đánh giá trùng model sinh. Chưa thử các đề xuất sửa pipeline.
 - Nguồn/AI hỗ trợ nếu có: dùng Claude Code (Claude Opus 5.5 và Sonnet 5.5) để chép/sửa m1-m5, cài Tasks 1-4, soạn nháp báo cáo; tự kiểm chứng bằng test, chạy live, đọc contexts trong `ragas_50q.json` và đối chiếu với `data/`. Mã m1-m5 gốc là phần đã làm ở bài Day18 của chính mình.
 
-<!-- Thành viên 2 và 3: sao chép mẫu dưới đây -->
+### NguyenDucTam-2A202602921
+
+- Phần được giao và phần thực tế đã làm: TV2, phụ trách Phase B và chủ biên Task 13. Cài Tasks 5-8 trong `src/phase_b_judge.py`: `pairwise_judge` (prompt có question, reference, A, B và 3 tiêu chí, dặn độ dài không phải tiêu chí; `temperature=0`, JSON mode; validate winner/scores, JSON sai thì retry tối đa 2 lần rồi raise), `swap_and_average` (lượt 2 đảo B/A, quy winner và scores về A/B gốc, hai lượt khác nhau thì tie), `cohen_kappa` (kiểm tra độ dài, list rỗng, nhãn 0/1; xử lý p_e = 1), `bias_report` (position/verbosity kèm `verbosity_details` và diễn giải dạng dấu hiệu). Chạy live Phase B, viết `bias_report.md`, soạn `blueprint.md` (kiến trúc, failure action, CI gates, monitoring, cải tiến).
+- Bằng chứng: PR #1 từ nhánh `feat/phase-b`; commit f4db003 (code Tasks 5-8), 7a75c4e (`artifacts/judge_results.json`, `bias_report.md`), 6fbbebc (`blueprint.md`).
+- Cách kiểm tra: `python -m pytest tests/test_phase_b.py -q` (8 passed); live `python scripts/run_experiments.py --phase b --live` một lần, validator trong runner pass; `python scripts/check_lab.py` báo PASS cho `phase_b_judge.py` và Phase B artifact. Tự đọc lại 5 cặp và 10 nhãn, đối chiếu với `ground_truth` trong `fixtures/test_set_50q.json`.
+- Điều đã học: pairwise A/B và nhãn 0/1 trả lời hai câu hỏi khác nhau, không đổi qua lại được. Swap-and-average phát hiện được 2/5 cặp đổi winner khi đảo thứ tự, và cả hai đều là cặp có hai answer gần như nhau (cùng sai ở id 5, cùng đúng ở id 12). κ phải trừ phần đồng thuận ngẫu nhiên: p_e = 0.52 nên p_o cao chưa đủ để kết luận. Nhãn đúng không có nghĩa reasoning đúng: ở ids 1, 12, 46, judge gán cho answer những ý chỉ có trong reference.
+- Giới hạn/cách xử lý: chỉ có 5 cặp và 10 nhãn, một judge cùng họ gpt-4o-mini với generator. κ = 1.0 rất nhạy, một nhãn lệch là giảm còn khoảng 0.78-0.8. Đã ghi các giới hạn này và cách kiểm chứng (judge khác họ, thêm quy tắc xếp "từ chối" và "trả lời sai") trong `bias_report.md` và `blueprint.md`. Số liệu Phase C trong blueprint chờ `guard_results.json` của TV3.
+- Nguồn/AI hỗ trợ nếu có: dùng Claude Code (Claude Opus 5.5) để viết code Tasks 5-8, chạy test và live, soạn nháp `bias_report.md` và `blueprint.md`. Tự kiểm chứng bằng unit test, validator của runner và `check_lab.py`, và đối chiếu từng cặp, từng nhãn với reference.
+
+<!-- Thành viên 3: sao chép mẫu dưới đây -->
 
 ### {{HoVaTen}}-{{MSSV}}
 
