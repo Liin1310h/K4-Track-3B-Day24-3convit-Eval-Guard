@@ -1,6 +1,6 @@
 # Đánh giá LLM Judge Phase B
 
-Nhóm: {{Tên nhóm}}
+Nhóm: 3convit
 
 Người phụ trách: Nguyễn Đức Tâm - 2A202602921
 
