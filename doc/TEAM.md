@@ -1,6 +1,6 @@
 # Nhóm thực hiện K4 Track 3B
 
-Tên nhóm: {{Tên nhóm}}
+Tên nhóm: 3convit
 
 Repo chung: https://github.com/Liin1310h/K4-Track-3B-Day24-Eval-Guard
 
@@ -8,20 +8,20 @@ Trưởng nhóm/người nộp: Phạm Thị Thùy Linh - 2A202602909
 
 Ngày lab/deadline áp dụng: 11:59 ngày 13/10/2026 (theo README; chờ coach xác nhận) — Asia/Ho_Chi_Minh (UTC+07:00)
 
-Commit dùng để chấm: {{Commit SHA}}
+Commit dùng để chấm: commit cuối trên nhánh `main` sau khi merge PR `feat/phase-c` (SHA lấy bằng `git rev-parse HEAD`, trưởng nhóm gửi kèm link nộp bài)
 
 Mỗi nhóm nộp một repo. Điền đủ thành viên và một mục INDIVIDUAL cho từng người.
 Thêm/xóa rows để khớp nhóm thật; mẫu ba rows không ép nhóm phải có ba người.
 
 ## Thành viên và phân công
 
-| STT | Họ và tên | MSSV | Vai trò / công việc thật | Bằng chứng |
-|---|---|---|---|---|
-| 1 | Phạm Thị Thùy Linh | 2A202602909 | Trưởng nhóm; tích hợp m1-m5 và sinh 50 answers; Phase A (Tasks 1-4 trong `src/phase_a_ragas.py`); `doc/reports/failure_clusters.md` | Commit 8161cd3, 1beac6f; `artifacts/answers_50q.json`, `artifacts/ragas_50q.json` |
-| 2 | Nguyễn Đức Tâm | 2A202602921 | Phase B (Tasks 5-8 trong `src/phase_b_judge.py`), chạy live Phase B; `doc/reports/bias_report.md`; chủ biên Task 13 `doc/reports/blueprint.md` | PR #1 (nhánh `feat/phase-b`): commit f4db003, 7a75c4e, 6fbbebc; `artifacts/judge_results.json` |
-| 3 | {{Họ tên}} | {{MSSV}} | {{Phase/file/hàm}} | {{Commit/PR/report}} |
+| STT | Họ và tên          | MSSV        | Vai trò / công việc thật                                                                                                                                                                                | Bằng chứng                                                                                     |
+| --- | ------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | Phạm Thị Thùy Linh | 2A202602909 | Trưởng nhóm; tích hợp m1-m5 và sinh 50 answers; Phase A (Tasks 1-4 trong `src/phase_a_ragas.py`); `doc/reports/failure_clusters.md`                                                                     | Commit 8161cd3, 1beac6f; `artifacts/answers_50q.json`, `artifacts/ragas_50q.json`              |
+| 2   | Nguyễn Đức Tâm     | 2A202602921 | Phase B (Tasks 5-8 trong `src/phase_b_judge.py`), chạy live Phase B; `doc/reports/bias_report.md`; chủ biên Task 13 `doc/reports/blueprint.md`                                                          | PR #1 (nhánh `feat/phase-b`): commit f4db003, 7a75c4e, 6fbbebc; `artifacts/judge_results.json` |
+| 3   | Bùi Quốc Việt      | 2A202602884 | Phase C (Tasks 9a, 9b, 10, 11, 12 trong `src/phase_c_guard.py`), sửa prompt `self_check_input` trong `guardrails/config.yml`, chạy live Phase C; số liệu guard/latency trong `doc/reports/blueprint.md` | Nhánh `feat/phase-c` (PR vào main); `artifacts/guard_results.json`                             |
 
-Người tích hợp/chạy batch/nộp link: {{Họ tên, công việc và bằng chứng}}.
+Người tích hợp/chạy batch/nộp link: Phạm Thị Thùy Linh tích hợp m1-m5, sinh 50 answers, merge các PR vào `main` và nộp link (commit 8161cd3, merge PR #1 e13b9bd). Mỗi phase do người phụ trách tự chạy batch: Phase A Phạm Thị Thùy Linh (`artifacts/ragas_50q.json`), Phase B Nguyễn Đức Tâm (`artifacts/judge_results.json`), Phase C Bùi Quốc Việt (`artifacts/guard_results.json`).
 
 ## Môi trường và chuẩn bị trước lớp
 
@@ -53,16 +53,36 @@ Sao chép mẫu cho mỗi thành viên; tiêu đề họ tên không dấu-MSSV.
 
 <!-- Thành viên 3: sao chép mẫu dưới đây -->
 
-### {{HoVaTen}}-{{MSSV}}
+### BuiQuocViet-2A202602884
 
-- Phần được giao và phần thực tế đã làm: {{Nhiệm vụ, file/hàm, mục đích}}.
-- Bằng chứng: {{Commit/PR và artifacts/reports liên quan}}.
-- Cách kiểm tra: {{Unit mock hoặc live experiment, lệnh và kết quả}}.
-- Điều đã học: {{Khái niệm và cách thể hiện trong bài}}.
-- Giới hạn/cách xử lý: {{Vấn đề và kiểm chứng}}.
-- Nguồn/AI hỗ trợ nếu có: {{Công cụ, phạm vi, cách tự kiểm chứng}}.
+- Phần được giao và phần thực tế đã làm: TV3, phụ trách Phase C. Cài 5 hàm trong `src/phase_c_guard.py`:
+  - `pii_scan` (Task 9a): gọi Presidio analyze rồi chỉ giữ các loại định danh nhạy cảm (`SENSITIVE_PII_TYPES`: VN_CCCD, VN_PHONE, EMAIL_ADDRESS, PHONE_NUMBER, CREDIT_CARD, IBAN_CODE, US_SSN, US_PASSPORT), sau đó anonymize. Lọc như vậy vì NER tiếng Anh gắn PERSON/US_DRIVER_LICENSE vào câu tiếng Việt sạch (vd "v2024") và chặn nhầm 7/8 câu clean.
+  - `check_input_rail` (Task 9b): chỉ chạy rail `input`, quyết định lấy từ `log.activated_rails[*].stop`, không suy ra từ chữ "xin lỗi".
+  - `run_adversarial_suite` (Task 10): Presidio chạy trước, NeMo chỉ chạy khi Presidio không chặn; cả batch dùng một `asyncio.run`.
+  - `check_output_rail` (Task 11): chỉ chạy rail `output` trên answer có sẵn.
+  - `measure_p95_latency` (Task 12): 2 lần warm-up thật bị loại khỏi kết quả, 20 sample, mỗi sample đo đủ cả hai tầng bằng `perf_counter`.
+
+  Sửa prompt `self_check_input` trong `guardrails/config.yml`, chạy live Phase C và điền số liệu guard/latency vào `blueprint.md`.
+
+- Bằng chứng: nhánh `feat/phase-c` và PR vào main (code, `guardrails/config.yml`, `artifacts/guard_results.json` với run timestamp 2026-10-13T01:07:13Z, số liệu Phase C trong `doc/reports/blueprint.md`).
+- Cách kiểm tra:
+  - Unit test: `python -m pytest tests/test_phase_c.py -q` cho 12 passed; `python -m pytest tests -q` cho 86 passed.
+  - Live: `python scripts/run_experiments.py --phase c --live` cho kết quả 28/28. Attacks 20/20 (Presidio chặn 4 câu PII, NeMo chặn 16 câu), clean 8/8 với false positive rate 0.0, output 4/4.
+  - `python scripts/check_lab.py` báo PASS cho `phase_c_guard.py` và Phase C artifact.
+- Điều đã học:
+  - Hai tầng bổ sung cho nhau. Presidio bắt PII theo pattern, nhanh (P95 khoảng 13 ms) và không tốn API. NeMo bắt jailbreak, off-topic và prompt injection, nhưng phải gọi LLM.
+  - Quyết định của rail phải đọc từ log, vì câu clean 102 cũng chứa "xin lỗi".
+  - P95 tổng phải tính trên tổng của từng sample, không được cộng hai P95 riêng.
+  - Đo P95 tách riêng từng tầng mới thấy bottleneck. NeMo chiếm khoảng 98% thời gian (P95 559 ms), nên input guard P95 là 567 ms, vượt ngân sách 500 ms.
+- Giới hạn/cách xử lý:
+  - Lần live đầu đạt attacks 18/20: câu 11 (làm thơ) và câu 15 (gợi ý phim Marvel) lọt qua. Clean đạt 7/8: câu 107 hỏi chính sách mật khẩu bị chặn nhầm, false positive rate 0.125.
+  - Đã sửa prompt `self_check_input`: định nghĩa rõ off-topic (sáng tác, giải trí...) và cho phép hỏi nội dung chính sách mật khẩu/VPN/lương theo bậc. Không sửa fixtures hay expected. Chạy lại được 20/20 và 8/8.
+  - Prompt được chỉnh dựa trên chính bộ 28 câu dùng để đánh giá, nên có rủi ro overfit. Cần thêm câu kiểm thử mới trước khi tin con số này.
+  - Kết quả là một lần chạy duy nhất với gpt-4o-mini (LLM không hoàn toàn tất định).
+  - Latency mới chỉ đo tầng input; RAG, output rail và end-to-end chưa đo.
+  - Môi trường: phải dùng `pyarrow==21.0.0`. Bản 26 đòi NumPy 2, còn bản 17 trên máy này gây lỗi DLL của torch (WinError 1114).
+- Nguồn/AI hỗ trợ nếu có: dùng Claude Code (Claude Opus 5.5) để cài môi trường, viết code Tasks 9a-12, phân tích false positive và sửa prompt guard, soạn nháp phần báo cáo. Tự kiểm chứng bằng unit test, chạy live hai lần, `check_lab.py`, và đọc từng dòng kết quả trong `guard_results.json`.
 
 ## Cập nhật sau khi nộp
 
-{{Ghi phiên bản nộp; nếu sửa sau deadline, ghi commit/thời điểm/lý do và thông báo
-coach cho phép áp dụng bản cập nhật. Nếu không có cập nhật, ghi rõ không có.}}
+Phiên bản nộp: commit cuối trên `main` ghi ở mục "Commit dùng để chấm". Không có cập nhật sau khi nộp.

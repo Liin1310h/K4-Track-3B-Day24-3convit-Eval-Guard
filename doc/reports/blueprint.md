@@ -1,6 +1,6 @@
 # Blueprint CI/CD cho RAG và guardrails
 
-Nhóm: {{Tên nhóm}}
+Nhóm: 3convit
 
 Người phụ trách: Nguyễn Đức Tâm - 2A202602921 (chủ biên). Số liệu guard và latency do TV3 (Phase C)
 cung cấp; số liệu RAGAS lấy từ Phase A của TV1.
@@ -8,8 +8,8 @@ cung cấp; số liệu RAGAS lấy từ Phase A của TV1.
 Đây là **đề xuất CI/CD**, không phải workflow đã được triển khai/chạy.
 Nguồn kết quả: artifacts/ragas_50q.json, judge_results.json, guard_results.json.
 Run timestamp: Phase A 2026-10-12T15:59:34.641344+00:00 (`ragas_50q.json`); Phase B
-2026-10-12T18:18:35.027819+00:00 (`judge_results.json`); Phase C {{metadata.created_at của guard_results.json}};
-guard models: {{metadata.models.guard của guard_results.json}} (cấu hình hiện tại trong `guardrails/config.yml` là `gpt-4o-mini`).
+2026-10-12T18:18:35.027819+00:00 (`judge_results.json`); Phase C 2026-10-13T01:07:13.984221+00:00;
+guard models: `gpt-4o-mini` (cấu hình hiện tại trong `guardrails/config.yml` là `gpt-4o-mini`).
 Models generation/evaluator/judge từ A/B: generation `gpt-4o-mini-2024-07-18` (metadata của
 `ragas_50q.json` và `judge_results.json`); evaluator RAGAS `gpt-4o-mini` + `text-embedding-3-small`
 (`ragas_50q.json`); judge `gpt-4o-mini` cho cả pairwise và binary (`judge_results.json`).
@@ -44,20 +44,20 @@ Bắt buộc Task 12: **input_layers_sequential**, Presidio + NeMo input, không
 short-circuit. Engines tạo trước đo; có hai warm-up thật không tính vào mẫu.
 Percentile nội suy tuyến tính từ raw samples; tổng từ tổng từng sample.
 
-Số mẫu timed: {{latency.n_samples}}; warm-up: {{latency.warmup_runs}};
-phương pháp: {{latency.percentile_method}}.
+Số mẫu timed: 20; warm-up: 2;
+phương pháp: linear.
 
 | Layer / scope | P50 ms | P95 ms | P99 ms | Tình trạng |
 |---|---|---|---|---|
-| Presidio | {{latency.presidio_ms.p50}} | {{latency.presidio_ms.p95}} | {{latency.presidio_ms.p99}} | {{Kết quả đo Task 12}} |
-| NeMo input | {{latency.nemo_input_ms.p50}} | {{latency.nemo_input_ms.p95}} | {{latency.nemo_input_ms.p99}} | {{Kết quả đo Task 12}} |
-| Input guard sequential | {{latency.input_guard_ms.p50}} | {{latency.input_guard_ms.p95}} | {{latency.input_guard_ms.p99}} | {{Kết quả đo Task 12}} |
+| Presidio | 10.31 | 12.96 | 15.38 | Đã đo; ~2% thời gian input guard |
+| NeMo input | 510.98 | 559.49 | 596.43 | Đã đo; bottleneck (~98%) |
+| Input guard sequential | 522.03 | 567.36 | 606.48 | Đã đo; P95 vượt budget 500ms |
 | RAG | chưa đo | chưa đo | chưa đo | Ngoài phạm vi bắt buộc |
 | NeMo output | chưa đo | chưa đo | chưa đo | Ngoài phạm vi bắt buộc |
 | Full guard / short-circuit request | chưa đo | chưa đo | chưa đo | Không suy từ input_guard_ms |
 
-Input-layer budget target: 500ms; kết quả thực tế/budget_ok: {{latency.input_guard_ms.p95 và latency.latency_budget_ok}}.
-{{Bottleneck nếu input guard P95 vượt 500ms, theo số của TV3}}
+Input-layer budget target: 500ms; kết quả thực tế/budget_ok: P95 = 567.36 ms, `latency_budget_ok = false` (vượt 67.36 ms).
+Bottleneck là NeMo input: P95 559.49 ms, vì mỗi lần kiểm tra là một lần gọi gpt-4o-mini qua mạng (self check input). Presidio chạy cục bộ, P95 chỉ 12.96 ms. Hướng giảm: dùng model guard nhỏ/cục bộ hoặc chạy song song NeMo input với retrieval rồi hủy nếu bị chặn; mọi thay đổi phải đo lại theo đúng quy tắc Task 12.
 
 Kế hoạch đo các phần chưa đo (cùng quy tắc với Task 12: tạo engine trước, 2 warm-up thật bị loại,
 `perf_counter`, ≥ 20 mẫu, percentile tuyến tính trên raw samples):
@@ -81,7 +81,7 @@ Mốc bắt buộc lab vẫn attacks ≥15/20; bonus ≥18/20 kèm clean control
 Đối chiếu với kết quả hiện tại: faithfulness trung bình 50 câu là **0.630 < 0.75**, nên pipeline hiện
 tại **không qua** gate này. avg_score trung bình là 0.688, qua ngưỡng 0.65. Đề xuất thêm hai gate cho
 judge: κ ≥ 0.6 trên 10 nhãn human (hiện là 1.0) và position consistency ≥ 3/5 cặp (hiện là 3/5).
-Gate guard: attacks {{adversarial.passed}}/20, clean {{clean.passed}}/8, output {{số output case passed}}/4.
+Gate guard: attacks 20/20, clean 8/8, output 4/4, nên qua gate guard đề xuất (≥18/20, 8/8, 4/4). Số này đạt được sau khi sửa prompt `self_check_input` trong `guardrails/config.yml`; lần chạy đầu với prompt cũ chỉ được attacks 18/20 (câu 11 làm thơ và 15 phim Marvel lọt) và clean 7/8 (câu 107 hỏi chính sách mật khẩu bị chặn nhầm). Prompt được chỉnh dựa trên chính bộ test nên có rủi ro overfit, cần thêm case mới để kiểm chứng.
 
 Đề xuất hai job (workflow **chưa được tạo** trong repo):
 
@@ -163,7 +163,7 @@ context_precision 0.952, context_recall 0.765, avg_score 0.688. Distribution y�
 (avg_score 0.623), sau đó là adversarial 0.628 và factual 0.782.
 Cohen’s κ: 1.0 (10/10 nhãn khớp human, p_o = 1.0, p_e = 0.52); position consistency 3/5 cặp,
 verbosity win rate 1/3.
-Attacks passed: {{adversarial.passed}}/20; clean false_positive_rate: {{clean.false_positive_rate}}.
+Attacks passed: 20/20; clean false_positive_rate: 0.0.
 
 Cải tiến đề xuất, mỗi cái kèm cách kiểm chứng khi chạy lại:
 

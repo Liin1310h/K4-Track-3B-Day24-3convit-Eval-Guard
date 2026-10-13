@@ -1,6 +1,6 @@
 # Phân tích lỗi Phase A
 
-Nhóm: {{Tên nhóm}}
+Nhóm: 3convit
 
 Người phụ trách: Phạm Thị Thùy Linh - 2A202602909
 
